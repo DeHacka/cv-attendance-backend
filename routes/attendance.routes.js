@@ -1,23 +1,18 @@
 /**
- * attendance.routes.js — Route definitions.
+ * attendance.routes.js — Route definitions, now role-protected.
  *
- * Thin layer — just maps HTTP method + path → middleware + controller.
- * upload.single("photo") tells multer to expect one file under the
- * field name "photo" in the multipart form.
+ * Admin only: enroll new faces
+ * Admin + Student: recognize (scan)
+ * Admin: view all records, Student: view only their own (handled in controller)
  */
-
 const express = require("express");
 const router = express.Router();
 const upload = require("../middleware/upload.middleware");
+const { requireAuth, requireRole } = require("../middleware/auth.middleware");
 const { enroll, recognize, records } = require("../controllers/attendance.controller");
 
-// POST /api/attendance/enroll
-router.post("/enroll", upload.single("photo"), enroll);
-
-// POST /api/attendance/recognize
-router.post("/recognize", upload.single("photo"), recognize);
-
-// GET /api/attendance/records
-router.get("/records", records);
+router.post("/enroll", requireAuth, requireRole("admin"), upload.single("photo"), enroll);
+router.post("/recognize", requireAuth, upload.single("photo"), recognize);
+router.get("/records", requireAuth, records);
 
 module.exports = router;
