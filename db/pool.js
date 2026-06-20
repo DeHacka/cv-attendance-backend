@@ -1,29 +1,31 @@
 /**
  * pool.js — PostgreSQL connection pool.
  *
- * Why a pool and not a single connection?
- * Each HTTP request needs a DB connection. A pool keeps N connections
- * open and reuses them across requests instead of opening/closing one
- * per request (which is slow). pg.Pool handles this automatically.
+ * SSL: Render's PostgreSQL requires SSL for external connections
+ * (i.e. connecting from outside Render's network, like your local PC).
+ * rejectUnauthorized: false skips certificate verification — fine for
+ * this use case since Render's certs are self-signed internally.
  *
- * We read config from .env so credentials never live in code.
+ * Internal connections (service-to-service within Render) work fine
+ * without this, but having it on doesn't break anything either, so
+ * we leave it on for both cases.
  */
 
 const { Pool } = require("pg");
 require("dotenv").config();
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL,
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
 });
 
-// Test the connection on startup so you know immediately if DB is misconfigured
 pool.connect((err, client, release) => {
-    if (err) {
-        console.error("PostgreSQL connection error:", err.message);
-    } else {
-        console.log("PostgreSQL connected");
-        release();
-    }
+  if (err) {
+    console.error("PostgreSQL connection error:", err.message);
+  } else {
+    console.log("PostgreSQL connected");
+    release();
+  }
 });
 
 module.exports = pool;
