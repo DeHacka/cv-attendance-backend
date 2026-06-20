@@ -12,9 +12,10 @@ const router = express.Router();
 const upload = require("../middleware/upload.middleware");
 const { requireAuth } = require("../middleware/auth.middleware");
 const { enroll, recognize, records } = require("../controllers/attendance.controller");
+const limitConcurrentUploads = require("../middleware/concurrency.middleware");
 
-router.post("/enroll", requireAuth, upload.single("photo"), enroll);
-router.post("/recognize", requireAuth, upload.single("photo"), recognize);
+router.post("/enroll", requireAuth, limitConcurrentUploads, upload.single("photo"), enroll);
+router.post("/recognize", requireAuth, limitConcurrentUploads, upload.single("photo"), recognize);
 router.get("/records", requireAuth, records);
 
 module.exports = router;
