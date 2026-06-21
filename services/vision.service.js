@@ -28,7 +28,8 @@ const PYTHON_URL = process.env.PYTHON_AI_URL || "http://localhost:8001";
  */
 const enrollFace = async (fileBuffer, mimetype, name, person_id) => {
     const form = new FormData();
-    form.append("name", name);
+    form.append("name", name)
+    if (person_id) form.append("person_id", person_id);
 
     // Append the buffer as a file - FormData needs filename + contentType
     form.append("photo", fileBuffer, {
